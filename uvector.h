@@ -103,7 +103,7 @@ public:
     inline void     link (pointer first, pointer last)    { _data.link (first, last); }
     //inline void     read (istream& is)      { container_read (is, *this); }
     //inline void     write (ostream& os) const   { container_write (os, *this); }
-    //inline void     text_write (ostringstream& os) const  { container_text_write (os, *this); }
+    inline void     text_write (ostringstream& os) const  { container_text_write (os, *this); }
     inline size_t   stream_size (void) const    { return container_stream_size (*this); }
 #if HAVE_CPP11
     inline      vector (vector&& v)     : _data(move(v._data)) {}

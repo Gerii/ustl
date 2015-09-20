@@ -7,7 +7,7 @@
 #include "mistream.h"
 #include "mostream.h"
 #include "ualgo.h"
-#include "ustringformat.h" // for vsnprintf (in string::format) TODO <stdio.h> in normal ustl
+#include <stdio.h> // for vsnprintf (in string::format) TODO <stdio.h> in normal ustl
 
 extern char data_end_address; //only in sweb
 
@@ -356,7 +356,7 @@ size_t string::stream_size (void) const noexcept
 }
 
 /// Reads the object from stream \p os
-/*void string::read (istream& is)
+void string::read (istream& is)
 {
     char szbuf [8];
     is >> szbuf[0];
@@ -383,7 +383,7 @@ void string::write (ostream& os) const
     if (!os.verify_remaining ("write", "ustl::string", szsz + sz)) return;
     os.write (szbuf, szsz);
     os.write (cdata(), sz);
-}*/
+}
 
 /// Returns a hash value for [first, last)
 /*static*/ hashvalue_t string::hash (const char* first, const char* last) noexcept

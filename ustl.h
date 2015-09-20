@@ -9,9 +9,10 @@
 #include "ustl/umultimap.h"
 #include "ustl/ustack.h"
 #include "ustl/uqueue.h"
-#include "ustl/ofstream.h" //not in sweb
+//#include "ustl/ofstream.h" //not in sweb
 #include "ustl/unumeric.h"
 #include "ustl/ulist.h"
+#include "ustl/uiostream.h"
 #include "ustl/uheap.h"
 #include "ustl/ustdxept.h" //not in sweb
 
