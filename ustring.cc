@@ -7,7 +7,9 @@
 #include "mistream.h"
 #include "mostream.h"
 #include "ualgo.h"
-#include <stdio.h>	// for vsnprintf (in string::format)
+#include "ustringformat.h" // for vsnprintf (in string::format) TODO <stdio.h> in normal ustl
+
+extern char data_end_address; //only in sweb
 
 namespace ustl {
 
@@ -19,29 +21,30 @@ const string::size_type string::npos;
 
 /// Assigns itself the value of string \p s
 string::string (const string& s)
-: memblock ((s.size()+1) & (s.is_linked()-1))	// +1 because base ctor can't call virtuals of this class
+: memblock ((s.size()+1) & (s.is_linked()-1)) // +1 because base ctor can't call virtuals of this class
 {
-    if (s.is_linked())
-	relink (s.c_str(), s.size());
-    else {
-	copy_n (s.begin(), size(), begin());
-	relink (begin(), size()-1);	// --m_Size
-    }
+//    if (s.is_linked()) //only in sweb
+//  relink (s.c_str(), s.size());
+//    else {
+  copy_n (s.begin(), size(), begin());
+  relink (begin(), size()-1); // --m_Size
+//    }
 }
 
 /// Links to \p s
 string::string (const_pointer s) noexcept
-: memblock ()
+: memblock (strlen(s)+1)
 {
     if (!s) s = "";
-    relink (s, strlen(s));
+    copy_n (s, strlen(s)+1, begin());
+    relink (begin(), size()-1); // --m_Size
 }
 
 /// Creates a string of length \p n filled with character \p c.
 string::string (size_type n, value_type c)
-: memblock (n+1)	// +1 because base ctor can't call virtuals of this class
+: memblock (n+1)  // +1 because base ctor can't call virtuals of this class
 {
-    relink (begin(), size()-1);	// --m_Size
+    relink (begin(), size()-1); // --m_Size
     fill_n (begin(), n, c);
     at(n) = 0;
 }
@@ -50,7 +53,7 @@ string::string (size_type n, value_type c)
 void string::resize (size_type n)
 {
     if (!(n | memblock::capacity()))
-	return relink ("",0);
+  return relink ("",0);
     memblock::resize (n);
     at(n) = 0;
 }
@@ -156,12 +159,12 @@ string& string::insert (size_type ipo, const wvalue_type* first, const wvalue_ty
     iterator ip (iat(ipo));
     size_type nti = distance (first, last), bti = 0;
     for (size_type i = 0; i < nti; ++ i)
-	bti += Utf8Bytes(first[i]);
+  bti += Utf8Bytes(first[i]);
     ip = iterator (memblock::insert (memblock::iterator(ip), n * bti));
     utf8out_iterator<string::iterator> uout (utf8out (ip));
     for (size_type j = 0; j < n; ++ j)
-	for (size_type k = 0; k < nti; ++ k, ++ uout)
-	    *uout = first[k];
+  for (size_type k = 0; k < nti; ++ k, ++ uout)
+      *uout = first[k];
     *end() = 0;
     return *this;
 }
@@ -227,9 +230,9 @@ string& string::replace (const_iterator first, const_iterator last, const_pointe
     const size_type bte = distance(first, last), bti = distance(i1, i2) * n;
     memblock::const_iterator rp = static_cast<memblock::const_iterator>(first);
     if (bti < bte)
-	rp = memblock::erase (rp, bte - bti);
+  rp = memblock::erase (rp, bte - bti);
     else if (bte < bti)
-	rp = memblock::insert (rp, bti - bte);
+  rp = memblock::insert (rp, bti - bte);
     fill (rp, i1, distance(i1, i2), n);
     *end() = 0;
     return *this;
@@ -246,7 +249,7 @@ string::size_type string::find (value_type c, size_type pos) const noexcept
 string::size_type string::find (const string& s, size_type pos) const noexcept
 {
     if (s.empty() || s.size() > size() - pos)
-	return npos;
+  return npos;
     size_type endi = s.size() - 1;
     value_type endchar = s[endi];
     size_type lastPos = endi;
@@ -254,8 +257,8 @@ string::size_type string::find (const string& s, size_type pos) const noexcept
     const size_type skip = endi - lastPos;
     const_iterator i = iat(pos) + endi;
     for (; i < end() && (i = ::ustl::find (i, end(), endchar)) < end(); i += skip)
-	if (memcmp (i - endi, s.c_str(), s.size()) == 0)
-	    return distance (begin(), i) - endi;
+  if (memcmp (i - endi, s.c_str(), s.size()) == 0)
+      return distance (begin(), i) - endi;
     return npos;
 }
 
@@ -263,8 +266,8 @@ string::size_type string::find (const string& s, size_type pos) const noexcept
 string::size_type string::rfind (value_type c, size_type pos) const noexcept
 {
     for (int i = min(pos,size()-1); i >= 0; --i)
-	if (at(i) == c)
-	    return i;
+  if (at(i) == c)
+      return i;
     return npos;
 }
 
@@ -275,9 +278,9 @@ string::size_type string::rfind (const string& s, size_type pos) const noexcept
     const_iterator sp = begin() + s.size() - 1;
     const_iterator m = s.end() - 1;
     for (long int i = 0; d > sp && size_type(i) < s.size(); -- d)
-	for (i = 0; size_type(i) < s.size(); ++ i)
-	    if (m[-i] != d[-i])
-		break;
+  for (i = 0; size_type(i) < s.size(); ++ i)
+      if (m[-i] != d[-i])
+    break;
     return d > sp ? (size_type) distance (begin(), d + 2 - s.size()) : npos;
 }
 
@@ -285,8 +288,8 @@ string::size_type string::rfind (const string& s, size_type pos) const noexcept
 string::size_type string::find_first_of (const string& s, size_type pos) const noexcept
 {
     for (size_type i = min(pos,size()); i < size(); ++ i)
-	if (s.find (at(i)) != npos)
-	    return i;
+  if (s.find (at(i)) != npos)
+      return i;
     return npos;
 }
 
@@ -294,8 +297,8 @@ string::size_type string::find_first_of (const string& s, size_type pos) const n
 string::size_type string::find_first_not_of (const string& s, size_type pos) const noexcept
 {
     for (size_type i = min(pos,size()); i < size(); ++ i)
-	if (s.find (at(i)) == npos)
-	    return i;
+  if (s.find (at(i)) == npos)
+      return i;
     return npos;
 }
 
@@ -303,8 +306,8 @@ string::size_type string::find_first_not_of (const string& s, size_type pos) con
 string::size_type string::find_last_of (const string& s, size_type pos) const noexcept
 {
     for (int i = min(pos,size()-1); i >= 0; -- i)
-	if (s.find (at(i)) != npos)
-	    return i;
+  if (s.find (at(i)) != npos)
+      return i;
     return npos;
 }
 
@@ -312,8 +315,8 @@ string::size_type string::find_last_of (const string& s, size_type pos) const no
 string::size_type string::find_last_not_of (const string& s, size_type pos) const noexcept
 {
     for (int i = min(pos,size()-1); i >= 0; -- i)
-	if (s.find (at(i)) == npos)
-	    return i;
+  if (s.find (at(i)) == npos)
+      return i;
     return npos;
 }
 
@@ -329,9 +332,9 @@ int string::vformat (const char* fmt, va_list args)
 #endif
     int rv = size(), wcap;
     do {
-	__va_copy (args2, args);
-	rv = vsnprintf (data(), wcap = memblock::capacity(), fmt, args2);
-	resize (rv);
+  __va_copy (args2, args);
+  rv = vsnprintf (data(), wcap = memblock::capacity(), fmt, args2);
+  resize (rv);
     } while (rv >= wcap);
     return rv;
 }
@@ -353,7 +356,7 @@ size_t string::stream_size (void) const noexcept
 }
 
 /// Reads the object from stream \p os
-void string::read (istream& is)
+/*void string::read (istream& is)
 {
     char szbuf [8];
     is >> szbuf[0];
@@ -380,7 +383,7 @@ void string::write (ostream& os) const
     if (!os.verify_remaining ("write", "ustl::string", szsz + sz)) return;
     os.write (szbuf, szsz);
     os.write (cdata(), sz);
-}
+}*/
 
 /// Returns a hash value for [first, last)
 /*static*/ hashvalue_t string::hash (const char* first, const char* last) noexcept
@@ -388,7 +391,7 @@ void string::write (ostream& os) const
     hashvalue_t h = 0;
     // This has the bits flowing into each other from both sides of the number
     for (; first < last; ++ first)
-	h = *first + ((h << 7) | (h >> (BitsInType(hashvalue_t) - 7)));
+  h = *first + ((h << 7) | (h >> (BitsInType(hashvalue_t) - 7)));
     return h;
 }
 

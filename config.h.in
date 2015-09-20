@@ -208,7 +208,7 @@
 #define WANT_UNROLLED_COPY 1
 
 // Define to 1 if you want to use MMX/SSE/3dNow! processor instructions
-#define WANT_MMX 1
+#define WANT_MMX 0
 
 // Define to byte sizes of types
 #undef SIZE_OF_CHAR

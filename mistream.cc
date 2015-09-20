@@ -16,7 +16,7 @@ namespace ustl {
 void ios_base::overrun (const char* op, const char* type, uint32_t n, uint32_t pos, uint32_t rem)
 {
     if (set_and_throw (rem ? failbit : (failbit | eofbit)))
-	throw stream_bounds_exception (op, type, pos, n, rem);
+	throw stream_bounds_exception (op, type, pos, n, rem); //TODO
 }
 
 //--------------------------------------------------------------------
@@ -28,8 +28,8 @@ istream::istream (const ostream& source) noexcept
 {
 }
 
-void istream::unlink (void) noexcept		{ cmemlink::unlink(); _pos = 0; }
-void ostream::unlink (void) noexcept		{ memlink::unlink(); _pos = 0; }
+void istream::unlink (void) noexcept    { cmemlink::unlink(); _pos = 0; }
+void ostream::unlink (void) noexcept    { memlink::unlink(); _pos = 0; }
 
 /// Writes all unread bytes into \p os.
 void istream::write (ostream& os) const
@@ -38,17 +38,17 @@ void istream::write (ostream& os) const
 }
 
 /// Writes the object to stream \p os.
-void istream::text_write (ostringstream& os) const
+/*void istream::text_write (ostringstream& os) const
 {
     os.write (ipos(), remaining());
-}
+}*/
 
 /// Reads a null-terminated string into \p str.
 void istream::read_strz (string& str)
 {
     const_iterator zp = find (ipos(), end(), '\0');
     if (zp == end())
-	zp = ipos();
+  zp = ipos();
     const size_type strl = distance (ipos(), zp);
     str.assign (ipos(), strl);
     _pos += strl + 1;
@@ -58,7 +58,7 @@ void istream::read_strz (string& str)
 istream::size_type istream::readsome (void* s, size_type n)
 {
     if (remaining() < n)
-	underflow (n);
+  underflow (n);
     const size_type ntr (min (n, remaining()));
     read (s, ntr);
     return ntr;
@@ -75,7 +75,7 @@ void ostream::align (size_type grain)
     size_t nb = distance (ip, ipa);
 #if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("align", "padding", nb))
-	return;
+  return;
 #else
     assert (remaining() >= nb && "Buffer overrun. Check your stream size calculations.");
 #endif
@@ -97,10 +97,10 @@ void ostream::read (istream& is)
 }
 
 /// Writes all written data to \p os.
-void ostream::text_write (ostringstream& os) const
+/*void ostream::text_write (ostringstream& os) const
 {
     os.write (begin(), pos());
-}
+}*/
 
 /// Inserts an empty area of \p size, at \p start.
 void ostream::insert (iterator start, size_type s)
